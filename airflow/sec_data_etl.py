@@ -1,11 +1,8 @@
-import sys
 import pandas as pd
-import numpy as np
 import requests
-from functools import lru_cache
 
 """
-Part of Airflow DAG. Takes in one command line argument of format YYYYMMDD. 
+Part of Airflow DAG. 
 Script will connect to SEC API and extract the latest information of companies filings for the latest quarter.
 """
 
@@ -133,8 +130,25 @@ def get_company_revenue(cik):
     return {"latestRevenueFilingDate": filing_date, 
             "latestRevenueQ10Value": revenue_val}
 
+def load_to_csv(file_name, df):
+    """Save extracted data to CSV file in /tmp folder"""
+    df.to_csv(f"/tmp/{file_name}.csv", index=False)
+
 def main():
     """Extract SEC data and load to CSV"""
+    all_companies = get_sec_companies()
+    all_companies_df = pd.DataFrame()
+    for _, company_row in all_companies.iterrows():
+        cik = company_row["cik_str"]
+        data = company_metadata(cik)
+        revenue_data = get_company_revenue(cik)
+        assets_data = get_company_assets(cik)
+
+        for key in revenue_data: data[key] = revenue_data[key]
+        for key in assets_data: data[key] = assets_data[key]
+        all_companies_df.append(data)
+    
+    load_to_csv("sec_data_etl", all_companies)
 
 if __name__ == "__main__":
     main()
