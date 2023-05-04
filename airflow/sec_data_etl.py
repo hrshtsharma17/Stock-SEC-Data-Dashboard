@@ -1,3 +1,4 @@
+import time
 import pandas as pd
 import requests
 
@@ -148,7 +149,8 @@ def main():
         for key in assets_data: data[key] = assets_data[key]
         all_companies_df.append(data)
     
-    load_to_csv("sec_data_etl", all_companies)
+    timestr = time.strftime("%Y%m%d")
+    load_to_csv("sec_data_etl_%s" % (timestr), all_companies)
 
 if __name__ == "__main__":
     main()
