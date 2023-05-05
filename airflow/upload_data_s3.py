@@ -10,6 +10,7 @@ Upload the csv data generated using EDGAR API to S3.
 """
 
 def read_config(config_path):
+    """Configuration Reader"""
     parser = configparser.ConfigParser()
     parser.read(config_path)
     return parser
@@ -31,6 +32,7 @@ def connect_to_s3():
         sys.exit(1)
 
 def create_bucket_if_not_exists(conn, bucket_name, aws_region):
+    """Generating S3 bucket if it doesnt not exists already"""
     try:
         conn.meta.client.head_bucket(Bucket=bucket_name)
     except botocore.exceptions.ClientError as e:
@@ -42,6 +44,7 @@ def create_bucket_if_not_exists(conn, bucket_name, aws_region):
             )
 
 def upload_file_to_s3(conn, bucket_name, key, filename):
+    """Upload Data to S3"""
     conn.meta.client.upload_file(
         Filename=filename, Bucket=bucket_name, Key=key
     )

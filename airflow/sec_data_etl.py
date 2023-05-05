@@ -40,6 +40,7 @@ def get_company_tickers():
     return company_tickers
 
 def get_sec_companies():
+    """Getting the list of companies from SEC API"""
     company_tickers = get_company_tickers()
     company_data = pd.DataFrame(company_tickers).T
     company_data["cik_str"] = company_data.cik_str.astype(str).str.zfill(10)
@@ -60,6 +61,7 @@ def get_company_filing_meta(cik):
     return company_filing_meta
 
 def company_metadata(cik):
+    """Getting the company metadata information from SEC API and extracting target keys info"""
     target_keys = set("cik",
     "entityType",
     'sic',
@@ -112,6 +114,7 @@ def get_company_concept(cik):
     return company_concept
 
 def get_company_assets(cik):
+    """Extracting Assets information per latest filing"""
     company_concept_dict = get_company_concept(cik)
     latest_unit_doc = company_concept_dict['units']['USD'][-1]
     filing_date = latest_unit_doc["filed"]
@@ -121,6 +124,7 @@ def get_company_assets(cik):
             "latestAssestsQ10Value": assets_val}
 
 def get_company_revenue(cik):
+    """Extracting Revenue information per latest filing"""
     company_facts_dict = get_company_facts(cik)
 
     #TODO: convert to get based and trigger empty record on error
