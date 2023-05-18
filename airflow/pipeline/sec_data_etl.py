@@ -32,7 +32,7 @@ def get_company_tickers():
     headers=HEADER
     )
 
-    if company_tickers.response=="200":
+    if company_tickers.status_code==200:
         company_tickers = company_tickers.json()
     else:
         company_tickers = {}
@@ -53,7 +53,7 @@ def get_company_filing_meta(cik):
     headers=HEADER
     )
 
-    if company_filing_meta.response=="200":
+    if company_filing_meta.status_code==200:
         company_filing_meta = company_filing_meta.json()
     else:
         company_filing_meta = {}
@@ -62,7 +62,7 @@ def get_company_filing_meta(cik):
 
 def company_metadata(cik):
     """Getting the company metadata information from SEC API and extracting target keys info"""
-    target_keys = set("cik",
+    target_keys = set(["cik",
     "entityType",
     'sic',
     'sicDescription',
@@ -71,7 +71,7 @@ def company_metadata(cik):
     'exchanges',
     'category',
     'stateOfIncorporation',
-    'filingCount')
+    'filingCount'])
 
     raw_meta_data = get_company_filing_meta(cik)
 
@@ -82,6 +82,8 @@ def company_metadata(cik):
         else:
             metadata[key] = None
     
+    metadata['filingCount'] = raw_meta_data['filings']['files'][-1]['filingCount']
+
     return metadata
 
 def get_company_facts(cik):
@@ -90,7 +92,7 @@ def get_company_facts(cik):
     headers=HEADER
     )
 
-    if company_facts.response=="200":
+    if company_facts.status_code==200:
         company_facts = company_facts.json()
     else:
         company_facts = {}
@@ -106,7 +108,7 @@ def get_company_concept(cik):
     headers=HEADER
     )
 
-    if company_concept.response=="200":
+    if company_concept.status_code==200:
         company_concept = company_concept.json()
     else:
         company_concept = {}
@@ -116,7 +118,7 @@ def get_company_concept(cik):
 def get_company_assets(cik):
     """Extracting Assets information per latest filing"""
     company_concept_dict = get_company_concept(cik)
-    latest_unit_doc = company_concept_dict['units']['USD'][-1]
+    latest_unit_doc = company_concept_dict.get('units', {"USD":[{"filed":None, "val":-1}]})['USD'][-1]
     filing_date = latest_unit_doc["filed"]
     assets_val = latest_unit_doc["val"]
 
@@ -127,8 +129,7 @@ def get_company_revenue(cik):
     """Extracting Revenue information per latest filing"""
     company_facts_dict = get_company_facts(cik)
 
-    #TODO: convert to get based and trigger empty record on error
-    latest_unit_doc = company_facts_dict['facts']['us-gaap']['Revenues']['units']['USD'][-1]
+    latest_unit_doc = company_facts_dict['facts']['us-gaap'].get('Revenues', {"units":{"USD":[{"filed":None, "val":-1}]}})['units']['USD'][-1]
     filing_date = latest_unit_doc["filed"]
     revenue_val = latest_unit_doc["val"]
 
@@ -141,9 +142,10 @@ def load_to_csv(file_name, df):
 
 def main():
     """Extract SEC data and load to CSV"""
-    all_companies = get_sec_companies()
+    all_companies = get_sec_companies()[:5]
     all_companies_df = pd.DataFrame()
     for _, company_row in all_companies.iterrows():
+        print(company_row["cik_str"])
         cik = company_row["cik_str"]
         data = company_metadata(cik)
         revenue_data = get_company_revenue(cik)
@@ -151,7 +153,7 @@ def main():
 
         for key in revenue_data: data[key] = revenue_data[key]
         for key in assets_data: data[key] = assets_data[key]
-        all_companies_df.append(data)
+        all_companies_df = all_companies_df.append(data, ignore_index=True)
     
     timestr = time.strftime("%Y%m%d")
     load_to_csv("sec_data_etl_%s" % (timestr), all_companies)
