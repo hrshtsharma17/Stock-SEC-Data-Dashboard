@@ -26,7 +26,7 @@ REDSHIFT_ROLE = parser.get("aws_config", "redshift_role")
 DATABASE = parser.get("aws_config", "redshift_database")
 BUCKET_NAME = parser.get("aws_config", "bucket_name")
 ACCOUNT_ID = parser.get("aws_config", "account_id")
-TABLE_NAME = "reddit"
+TABLE_NAME = "sec_table"
 
 # Check command line argument passed
 try:

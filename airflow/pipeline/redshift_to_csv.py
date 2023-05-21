@@ -20,7 +20,7 @@ PASSWORD = parser.get("aws_config", "redshift_password")
 HOST = parser.get("aws_config", "redshift_hostname")
 PORT = parser.get("aws_config", "redshift_port")
 DATABASE = parser.get("aws_config", "redshift_database")
-TABLE_NAME = "reddit"
+TABLE_NAME = "sec_table"
 
 
 def connect_to_redshift():
