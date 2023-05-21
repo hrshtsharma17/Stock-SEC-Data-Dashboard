@@ -24,13 +24,13 @@ resource "aws_redshift_cluster" "redshift" {
   cluster_type       = "single-node"
   publicly_accessible = "true"
   iam_roles = [aws_iam_role.redshift_role.arn]
-  vpc_security_group_ids = [aws_security_group.sg_redshift.id]
+  vpc_security_group_ids = [aws_security_group.sg_redshift_users.id]
   
 }
 
 # Confuge security group for Redshift allowing all inbound/outbound traffic
- resource "aws_security_group" "sg_redshift" {
-  name        = "sg_redshift"
+ resource "aws_security_group" "sg_redshift_users" {
+  name        = "sg_redshift_users"
   ingress {
     from_port       = 0
     to_port         = 0
@@ -65,14 +65,7 @@ resource "aws_iam_role" "redshift_role" {
 }
 
 # Create S3 bucket
-resource "aws_s3_bucket" "reddit_bucket" {
+resource "aws_s3_bucket" "sec_bucket" {
   bucket = var.s3_bucket
   force_destroy = true # will delete contents of bucket when we run terraform destroy
 }
-
-# Set access control of bucket to private
-resource "aws_s3_bucket_acl" "s3_reddit_bucket_acl" {
-  bucket = aws_s3_bucket.reddit_bucket.id
-  acl    = "private"
-}
-      
