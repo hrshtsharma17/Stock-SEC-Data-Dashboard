@@ -2,7 +2,6 @@ import configparser
 import pathlib
 import psycopg2
 import sys
-from validation import validate_input
 from psycopg2 import sql
 
 """
@@ -47,15 +46,15 @@ sql_create_table = sql.SQL(
                             sic int,
                             sicDescription varchar(max),
                             name varchar(max),
-                            tickers VARCHAR[],
-                            exchanges VARCHAR[],
+                            exchanges varchar(max),
+                            tickers varchar(max),
                             category varchar(max),
                             stateOfIncorporation varchar(20),
                             filingCount int,
-                            latestRevenueFilingDate DATE,
-                            latestRevenueQ10Value BIGINT,
-                            latestAssestsFilingDate DATE,
-                            latestAssestsQ10Value BIGINT,
+                            latestRevenueFilingDate date,
+                            latestRevenueQ10Value bigint,
+                            latestAssestsFilingDate date,
+                            latestAssestsQ10Value bigint,
                             created_utc timestamp
                         );"""                  
 ).format(table=sql.Identifier(TABLE_NAME))
@@ -76,7 +75,6 @@ drop_temp_table = "DROP TABLE our_staging_table;"
 
 def main():
     """Upload file form S3 to Redshift Table"""
-    validate_input(output_name)
     rs_conn = connect_to_redshift()
     load_data_into_redshift(rs_conn)
 

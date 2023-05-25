@@ -36,6 +36,7 @@ def create_bucket_if_not_exists(conn, bucket_name, aws_region):
     try:
         conn.meta.client.head_bucket(Bucket=bucket_name)
     except botocore.exceptions.ClientError as e:
+        print("------------- Bucket Creation -----------------------")
         error_code = e.response["Error"]["Code"]
         if error_code == "404":
             conn.create_bucket(
@@ -45,6 +46,7 @@ def create_bucket_if_not_exists(conn, bucket_name, aws_region):
 
 def upload_file_to_s3(conn, bucket_name, key, filename):
     """Upload Data to S3"""
+    print(bucket_name, key, filename)
     conn.meta.client.upload_file(
         Filename=filename, Bucket=bucket_name, Key=key
     )

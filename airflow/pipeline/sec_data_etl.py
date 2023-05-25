@@ -1,3 +1,4 @@
+import sys
 import time
 import pandas as pd
 import requests
@@ -82,7 +83,13 @@ def company_metadata(cik):
         else:
             metadata[key] = None
     
-    metadata['filingCount'] = raw_meta_data['filings']['files'][-1]['filingCount']
+    if raw_meta_data['filings'].get('files'):
+        metadata['filingCount'] = raw_meta_data['filings']['files'][-1]['filingCount']
+    else:
+        metadata['filingCount'] = None
+    
+    metadata['tickers'] = metadata['tickers'][-1] #TODO: Workround for array error in redshift. Find a fix
+    metadata['exchanges'] = metadata['exchanges'][-1] #TODO: Workround for array error in redshift. Find a fix
 
     return metadata
 
@@ -118,7 +125,13 @@ def get_company_concept(cik):
 def get_company_assets(cik):
     """Extracting Assets information per latest filing"""
     company_concept_dict = get_company_concept(cik)
-    latest_unit_doc = company_concept_dict.get('units', {"USD":[{"filed":None, "val":-1}]})['USD'][-1]
+    latest_unit_doc = company_concept_dict.get('units', {"USD":[{"filed":None, "val":-1}]})
+    if latest_unit_doc.get('USD'):
+        latest_unit_doc = latest_unit_doc['USD'][-1]
+    elif latest_unit_doc.get('EUR'):
+        latest_unit_doc = latest_unit_doc['EUR'][-1]
+        latest_unit_doc["val"] *= 1.08 #TODO: Add dynamic currency exchange check
+
     filing_date = latest_unit_doc["filed"]
     assets_val = latest_unit_doc["val"]
 
@@ -129,7 +142,11 @@ def get_company_revenue(cik):
     """Extracting Revenue information per latest filing"""
     company_facts_dict = get_company_facts(cik)
 
-    latest_unit_doc = company_facts_dict['facts']['us-gaap'].get('Revenues', {"units":{"USD":[{"filed":None, "val":-1}]}})['units']['USD'][-1]
+    try:
+        latest_unit_doc = company_facts_dict['facts']['us-gaap'].get('Revenues', {"units":{"USD":[{"filed":None, "val":-1}]}})['units']['USD'][-1]
+    except KeyError:
+        latest_unit_doc = {"filed":None, "val":-1}
+
     filing_date = latest_unit_doc["filed"]
     revenue_val = latest_unit_doc["val"]
 
@@ -142,6 +159,12 @@ def load_to_csv(file_name, df):
 
 def main():
     """Extract SEC data and load to CSV"""
+    try:
+        output_name = sys.argv[1]
+    except IndexError as e:
+        print(f"Command line argument not passed. Error {e}")
+        sys.exit(1)
+    
     all_companies = get_sec_companies()[:5]
     all_companies_df = pd.DataFrame()
     for _, company_row in all_companies.iterrows():
@@ -154,9 +177,8 @@ def main():
         for key in revenue_data: data[key] = revenue_data[key]
         for key in assets_data: data[key] = assets_data[key]
         all_companies_df = all_companies_df.append(data, ignore_index=True)
-    
-    timestr = time.strftime("%Y%m%d")
-    load_to_csv("sec_data_etl_%s" % (timestr), all_companies)
+
+    load_to_csv(output_name, all_companies_df)
 
 if __name__ == "__main__":
     main()
