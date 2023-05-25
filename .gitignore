@@ -2,3 +2,8 @@
 terraform/.terraform
 terraform/.terraform.lock.hcl
 terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+airflow/pipeline/configuration.conf
+airflow/.env
+airflow/logs
+__pycache__
