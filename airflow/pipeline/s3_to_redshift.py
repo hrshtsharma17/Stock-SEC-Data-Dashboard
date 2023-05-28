@@ -32,7 +32,8 @@ try:
     output_name = sys.argv[1]
 except Exception as e:
     print(f"Command line argument not passed. Error {e}")
-    sys.exit(1)
+    output_name = "20230904"
+    #sys.exit(1)
 
 # Our S3 file access path
 file_path = f"s3://{BUCKET_NAME}/{output_name}.csv"
@@ -41,16 +42,16 @@ role_string = f"arn:aws:iam::{ACCOUNT_ID}:role/{REDSHIFT_ROLE}"
 # Create Redshift table if it doesn't exist
 sql_create_table = sql.SQL(
     """CREATE TABLE IF NOT EXISTS {table} (
-                            cik varchar PRIMARY KEY,
-                            entityType varchar(max),
-                            sic int,
-                            sicDescription varchar(max),
-                            name varchar(max),
-                            exchanges varchar(max),
                             tickers varchar(max),
                             category varchar(max),
-                            stateOfIncorporation varchar(20),
+                            sicDescription varchar(max),      
+                            entityType varchar(max),
+                            exchanges varchar(max), 
                             filingCount int,
+                            cik varchar PRIMARY KEY,                                                                                                                                  
+                            name varchar(max),
+                            stateOfIncorporation varchar(20),                              
+                            sic int,
                             latestRevenueFilingDate date,
                             latestRevenueQ10Value bigint,
                             latestAssestsFilingDate date,
@@ -61,16 +62,16 @@ sql_create_table = sql.SQL(
 
 # If ID already exists in table, we remove it and add new ID record during load.
 create_temp_table = sql.SQL(
-    "CREATE TEMP TABLE our_staging_table (LIKE {table});"
+    "CREATE TEMP TABLE staging_table (LIKE {table});"
 ).format(table=sql.Identifier(TABLE_NAME))
-sql_copy_to_temp = f"COPY our_staging_table FROM '{file_path}' iam_role '{role_string}' IGNOREHEADER 1 DELIMITER ',' CSV;"
+sql_copy_to_temp = f"COPY staging_table FROM '{file_path}' iam_role '{role_string}' IGNOREHEADER 1 DELIMITER ',' CSV;"
 delete_from_table = sql.SQL(
-    "DELETE FROM {table} USING our_staging_table WHERE {table}.id = our_staging_table.id;"
+    "DELETE FROM {table} USING staging_table WHERE {table}.cik = staging_table.cik;"
 ).format(table=sql.Identifier(TABLE_NAME))
 insert_into_table = sql.SQL(
-    "INSERT INTO {table} SELECT * FROM our_staging_table;"
+    "INSERT INTO {table} SELECT * FROM staging_table;"
 ).format(table=sql.Identifier(TABLE_NAME))
-drop_temp_table = "DROP TABLE our_staging_table;"
+drop_temp_table = "DROP TABLE staging_table;"
 
 
 def main():

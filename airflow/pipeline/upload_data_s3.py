@@ -64,7 +64,7 @@ def main():
         sys.exit(1)
 
     FILENAME = f"/tmp/{output_name}.csv"
-    KEY = FILENAME
+    KEY = FILENAME.split("/")[-1]
 
     validate_input(output_name)
 

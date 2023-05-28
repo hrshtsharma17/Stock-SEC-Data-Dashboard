@@ -1,5 +1,5 @@
 import sys
-import time
+import datetime
 import pandas as pd
 import requests
 
@@ -9,22 +9,10 @@ Script will connect to SEC API and extract the latest information of companies f
 """
 
 HEADER = {'User-Agent': "youremail@address.com"}
-META_DATA_FIELDS = (
-    "cik",
-    "entityType",
-    'sic',
-    'sicDescription',
-    'name',
-    'tickers',
-    'exchanges',
-    'category',
-    'stateOfIncorporation',
-    'filingCount',
-    'latestRevenueFilingDate',
-    'latestRevenueQ10Value',
-    'latestAssestsFilingDate',
-    'latestAssestsQ10Value'
-)
+META_DATA_FIELDS = ['tickers', 'category', 'sicDescription', 'entityType', 'exchanges',
+       'filingCount', 'cik', 'name', 'stateOfIncorporation', 'sic',
+       'latestRevenueFilingDate', 'latestRevenueQ10Value',
+       'latestAssestsFilingDate', 'latestAssestsQ10Value', 'created_utc']
 
 
 def get_company_tickers():
@@ -84,12 +72,15 @@ def company_metadata(cik):
             metadata[key] = None
     
     if raw_meta_data['filings'].get('files'):
-        metadata['filingCount'] = raw_meta_data['filings']['files'][-1]['filingCount']
+        metadata['filingCount'] = int(raw_meta_data['filings']['files'][-1]['filingCount'])
     else:
-        metadata['filingCount'] = None
+        metadata['filingCount'] = 0
     
     metadata['tickers'] = metadata['tickers'][-1] #TODO: Workround for array error in redshift. Find a fix
     metadata['exchanges'] = metadata['exchanges'][-1] #TODO: Workround for array error in redshift. Find a fix
+    metadata['cik'] = int(metadata['cik'])
+    if not metadata['sic']:
+        metadata['sic'] = -1
 
     return metadata
 
@@ -133,7 +124,7 @@ def get_company_assets(cik):
         latest_unit_doc["val"] *= 1.08 #TODO: Add dynamic currency exchange check
 
     filing_date = latest_unit_doc["filed"]
-    assets_val = latest_unit_doc["val"]
+    assets_val = int(latest_unit_doc["val"])
 
     return {"latestAssestsFilingDate": filing_date, 
             "latestAssestsQ10Value": assets_val}
@@ -165,10 +156,9 @@ def main():
         print(f"Command line argument not passed. Error {e}")
         sys.exit(1)
     
-    all_companies = get_sec_companies()[:5]
-    all_companies_df = pd.DataFrame()
+    all_companies = get_sec_companies()[:4]
+    all_companies_df = pd.DataFrame(columns=META_DATA_FIELDS)
     for _, company_row in all_companies.iterrows():
-        print(company_row["cik_str"])
         cik = company_row["cik_str"]
         data = company_metadata(cik)
         revenue_data = get_company_revenue(cik)
@@ -176,6 +166,8 @@ def main():
 
         for key in revenue_data: data[key] = revenue_data[key]
         for key in assets_data: data[key] = assets_data[key]
+
+        data["created_utc"] = datetime.datetime.now()
         all_companies_df = all_companies_df.append(data, ignore_index=True)
 
     load_to_csv(output_name, all_companies_df)
