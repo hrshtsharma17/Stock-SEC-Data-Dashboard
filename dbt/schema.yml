@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: sec_transformed
+    columns:
+      - name: tickers
+        description: The ticker symbols
+        tests:
+          - unique
+      - name: category
+        description: The category of the entity
+      - name: sicdescription
+        description: The description of the SIC code
+      - name: entitytype
+        description: The type of entity
+      - name: exchanges
+        description: The stock exchanges where it's listed
+      - name: filingcount
+        description: The count of filings
+      - name: cik
+        description: The CIK (Central Index Key)
+        tests:
+          - unique
+      - name: name
+        description: The name of the entity
+      - name: stateofincorporation
+        description: The state of incorporation
+      - name: sic
+        description: The SIC code
+        tests:
+          - accepted_values: { values: [integer] }
+      - name: latestrevenuefilingdate
+        description: The date of the latest revenue filing
+        tests:
+          - accepted_values: { values: [date] }
+      - name: latestrevenueq10value
+        description: The latest revenue Q10 value
+        tests:
+          - accepted_values: { values: [numeric] }
+      - name: latestassestsfilingdate
+        description: The date of the latest assets filing
+        tests:
+          - accepted_values: { values: [date] }
+      - name: latestassestsq10value
+        description: The latest assets Q10 value
+        tests:
+          - accepted_values: { values: [numeric] }
+      - name: created_utc
+        description: The timestamp when the record was created
+        tests:
+          - accepted_values: { values: [timestamp] }

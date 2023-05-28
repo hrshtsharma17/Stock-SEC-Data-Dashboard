@@ -1,0 +1,18 @@
+SELECT
+    tickers,
+    category,
+    sicdescription,
+    entitytype,
+    exchanges,
+    filingcount,
+    cik,
+    name,
+    stateofincorporation,
+    sic,
+    latestrevenuefilingdate,
+    latestrevenueq10value,
+    latestassestsfilingdate,
+    latestassestsq10value,
+    created_utc
+FROM
+    dev.public.sec_table
