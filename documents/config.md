@@ -1,4 +1,4 @@
-# Configuration Setup
+# Config Setup
 
 In the next step, you'll need to create a configuration file with your specific details. The extract and load scripts in our pipeline will utilize the information provided in this configuration file. A configuration template has already been provided in the airflow folder, similar to the one mentioned below.
 

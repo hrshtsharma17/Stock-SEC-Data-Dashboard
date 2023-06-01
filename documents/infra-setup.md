@@ -1,4 +1,4 @@
-# AWS Infrastructure Setup
+# Infrastructure Setup
 
 We will use an infrastructure-as-code tool called `Terraform` to quickly set up (and tear down) our AWS resources using code. Please note that Terraform is not limited to AWS; it works with multiple cloud providers.
 

@@ -1,4 +1,4 @@
-# Overview
+# Starter
 
 This pipeline serves multiple purposes: it not only facilitates dashboard creation but also offers exposure to a variety of tools, skill development opportunities, and the potential to assist others. This versatile tool can be applied to diverse data sources, including interactions on social networks, financial trading data, common crawl data, and more.
 
