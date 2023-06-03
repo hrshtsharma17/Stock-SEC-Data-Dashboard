@@ -104,7 +104,7 @@ You are now in an IDE which is connected to your Redshift cluster. Here we'll ru
 
 1. If you check the bottom right of the screen, you'll see a preview button. Click this to see what your outputted table will look like based on the above SQL query. Basically, when we run `dbt run` in the UI (further down this page) what'll happen is this table will be created in a new schema within our Redshift database.
 
-1. Under the `dbt_project.yml`, update it to the following. All we've really changed here is the project name to `reddit_project` and told dbt to create all models as tables (rather than views). You can leave it as views if you wish.
+1. Under the `dbt_project.yml`, update it to the following. All we've really changed here is the project name to `sec_project` and told dbt to create all models as tables (rather than views). You can leave it as views if you wish.
 
     ```yaml
     # Name your project! Project names should contain only lowercase characters
@@ -140,7 +140,7 @@ You are now in an IDE which is connected to your Redshift cluster. Here we'll ru
     # as tables. These settings can be overridden in the individual model files
     # using the `{{ config(...) }}` macro.
     models:
-      reddit_project:
+      sec_project:
         materialized: table
     ```
 
