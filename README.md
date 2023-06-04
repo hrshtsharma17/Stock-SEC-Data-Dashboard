@@ -4,6 +4,8 @@
 
 The Stock SEC Data Dashboard project is designed not only to create a dashboard but also to serve as a learning experience, introducing users to a range of tools, helping them develop new skills, and potentially assisting others in similar data-related endeavors. This versatile tool can be adapted to work with various forms of data, such as interactions on social networks, financial trading data, common crawl data, and more.
 
+![The Data Pipeline](documents/pipeline.png "Data Extraction Pipeline")
+
 ## Project Workflow
 
 The project workflow is divided into several key steps:
